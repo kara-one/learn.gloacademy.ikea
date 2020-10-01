@@ -54,9 +54,9 @@ export const getData = {
     },
     catalog(callback) {
         this.get((data) => {
-            const result = data.reduce((total, currentValue) => {
-                if (total.indexOf(currentValue.category) === -1) {
-                    total.push(currentValue.category);
+            const result = data.reduce((total, { category }) => {
+                if (!total.includes(category)) {
+                    total.push(category);
                 }
                 return total;
             }, []);
@@ -64,13 +64,14 @@ export const getData = {
         })},
     subCatalog(value, callback) {
         this.get((data) => {
-            const result = data.reduce((total, currentValue) => {
-                if (currentValue.category.toLowerCase() === value.toLowerCase() &&
-                    total.indexOf(currentValue.subcategory) === -1) {
-                    total.push(currentValue.subcategory);
-                }
-                return total;
-            }, []);
+            const result = data
+                .filter(item => item.category === value)
+                .reduce((total, { subcategory }) => {
+                    if (!total.includes(subcategory)) {
+                        total.push(subcategory);
+                    }
+                    return total;
+                }, []);
             callback(result);
         })
     },
