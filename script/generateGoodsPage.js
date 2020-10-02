@@ -1,34 +1,46 @@
 import {getData} from './getData.js';
+import userData from './userData.js';
 
-const wishList = ['idd005', 'idd008', 'idd078', 'idd045'];
+const COUNTER = 6;
 let blankListMessage = '';
 
 const generateGoodsPage = () => {
-
     const mainHeader = document.querySelector('.main-header');
-    const goodsList = document.querySelector('.goods-list');
-
+    
     const generateCards = (data) => {
+        const goodsList = document.querySelector('.goods-list');
+        
         let listHTML = '';
 
         // Each query result-list
-        data.forEach(item => {
+        data.forEach( item => {
+            const { name: itemName, count, id, img, description, price } = item;
+            
             listHTML += `
                 <li class="goods-list__item">
-					<a class="goods-item__link" href="card.html#idd001">
+					<a class="goods-item__link" href="card.html#${id}">
 						<article class="goods-item">
 							<div class="goods-item__img">
-								<img src="${item.img[0]}"
-									data-second-image="${item.img[1]}" alt="${item.name}">
+								<img src="${img[0]}"
+									${img[1] ? `data-second-image="${img[1]}"` : ''} alt="${itemName}">
 							</div>
-							<p class="goods-item__new">Новинка</p>
-							<h3 class="goods-item__header">${item.name}</h3>
-							<p class="goods-item__description">${item.description}</p>
+                            ${count > COUNTER ?
+                                '<p class="goods-item__new">Новинка</p>' :
+                                ''}
+                            ${!count ?
+                                '<p class="goods-item__new">Нет в наличии</p>' :
+                                ''}
+							<h3 class="goods-item__header">${itemName}</h3>
+							<p class="goods-item__description">${description}</p>
 							<p class="goods-item__price">
-								<span class="goods-item__price-value">${item.price}</span>
+								<span class="goods-item__price-value">${price}</span>
 								<span class="goods-item__currency"> ₽</span>
-							</p>
-							<button class="btn btn-add-card" aria-label="Добравить в корзину" data-idd="${item.id}"></button>
+                            </p>
+                            ${count ?
+                                `<button class="btn btn-add-card" 
+                                    aria-label="Добравить в корзину"
+                                    data-idd="${id}"></button>` :
+                                ''} 
 						</article>
 					</a>
 				</li>
@@ -43,6 +55,15 @@ const generateGoodsPage = () => {
         // add view
         goodsList.textContent = '';
         goodsList.insertAdjacentHTML('afterbegin', listHTML);
+
+        goodsList.addEventListener('click', (e) => {
+            const btnAddCard = e.target.closest('.btn-add-card');
+            if (btnAddCard) {
+                e.preventDefault();
+                userData.cartList = btnAddCard.dataset.idd;
+            }
+        });
+        
     };
 
     // Query routes
@@ -60,7 +81,7 @@ const generateGoodsPage = () => {
         } else if (prop === 'wishlist') {
             mainHeader.textContent = `Список желаний`;
             blankListMessage = 'Ваш список желаний пуст!';
-            getData.wishList(wishList, generateCards);
+            getData.wishList(userData.wishList, generateCards);
         } else if (prop === 'cat' || prop === 'subcat') {
             mainHeader.textContent = value;
             blankListMessage = 'В этой категории пусто!';
