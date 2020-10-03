@@ -1,7 +1,5 @@
 'use strict'
 
-import './storage.js';
-
 import generateCartPage from './generateCartPage.js';
 import generateCatalog from './generateCatalog.js';
 import generateFooter from './generateFooter.js';

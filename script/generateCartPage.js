@@ -1,8 +1,6 @@
 import { getData } from './getData.js';
 import userData from './userData.js';
 
-const NEW_COUNT_ITEM = 6;
-
 const generateCartPage = () => {
     const cartList = document.querySelector('.cart-list');
     const cartTotalPrice = document.querySelector('.cart-total-price');
@@ -14,16 +12,17 @@ const generateCartPage = () => {
 
         // Each query result-list
         data.forEach(({ count, description, name: itemName, price, id, img }) => {
-            const itemCart = cartData.filter((item) => item.id === id)[0];
-            totalCartPrice += price * itemCart.count;
+            let itemCartCount = cartData.find((item) => item.id === id).count;
+            itemCartCount = itemCartCount >= count ? count : itemCartCount;
+            totalCartPrice += price * itemCartCount;
             let quantityList = '';
 
-            const priceRegular = itemCart.count > 1 ?
+            const priceRegular = itemCartCount > 1 ?
                 `<div class="product__price-regular">${price}</div>` :
                 '';
             
             for (let i = 1; i <= count; i++) { 
-                const selected = itemCart.count === i ? 'selected' : '';
+                const selected = itemCartCount === i ? 'selected' : '';
                 quantityList += `
                     <option value="${i}" ${selected}>${i}</option>
                 `;                
@@ -43,19 +42,19 @@ const generateCartPage = () => {
                         <div class="product__prices">
                             <div class="product__price-type product__price-type-regular">
                                 <div>
-                                    <div class="product__total product__total-regular">${price * itemCart.count}</div>
+                                    <div class="product__total product__total-regular">${price * itemCartCount}</div>
                                     ${priceRegular}
                                 </div>
                             </div>
                         </div>
                         <div class="product__controls">
                             <div class="product-controls__remove">
-                                <button type="button" class="btn btn-remove">
+                                <button type="button" class="btn btn-remove" data-idd="${id}">
                                     <img src="image/remove-thin-24.16c1cc7a.svg" alt="Удалить товар">
                                 </button>
                             </div>
                             <div class="product-controls__quantity">
-                                <select title="Выберите количество" aria-label="Выберите количество">
+                                <select title="Выберите количество" aria-label="Выберите количество" data-idd="${id}">
                                     ${quantityList}
                                 </select>
                             </div>
@@ -68,11 +67,30 @@ const generateCartPage = () => {
         // add view
         cartList.textContent = '';
         cartList.insertAdjacentHTML('afterbegin', listHTML);
-        cartTotalPrice.textContent = totalCartPrice;        
+        cartTotalPrice.textContent = totalCartPrice;
+
     }
 
     if (location.pathname.includes('cart')) {
         getData.cart(userData.cartList, renderCart);
+
+        cartList.addEventListener('change', (e) => {
+            userData.changeCountCartList = {
+                id: e.target.dataset.idd,
+                count: parseInt(e.target.value),
+            };
+            getData.cart(userData.cartList, renderCart);
+        });
+
+        cartList.addEventListener('click', (e) => {
+            const target = e.target;
+            const btnRemove = target.closest('.btn-remove');
+
+            if (btnRemove) {
+                userData.deleteItemCart = btnRemove.dataset.idd;
+                getData.cart(userData.cartList, renderCart);
+            }            
+        });
     }
 
 };
