@@ -1,6 +1,52 @@
 import { getData } from './getData.js';
 import userData from './userData.js';
 
+const sendData = async (url, data) => {
+    const response = await fetch(url, {
+        method: 'POST',
+        body: data,
+    });
+
+    if (!response.ok) {
+        throw new Error(`Ошибку по адресу ${url}, статус ошибки ${response}`);
+    }
+
+    return await response.json();
+};
+
+const sendCart = () => {
+    const cartForm = document.querySelector('.cart-form');
+
+    const data = {
+        name: 'Bear',
+        count: 3,
+    };
+
+    cartForm.addEventListener('submit', e => {
+        e.preventDefault();
+
+        const formData = new FormData(cartForm);
+
+        // Example 1
+        let data = {};
+        for (const [key, value] of formData) {
+            data[key] = value;
+        }
+        data.order = userData.cartList;
+        
+        // Example 2
+        //formData.set('order', JSON.stringify(userData.cartList));
+        //sendData('https://jsonplaceholder.typicode.com/posts', formData)
+        sendData('https://jsonplaceholder.typicode.com/posts', JSON.stringify(data))
+            .then(() => {
+                cartForm.reset();
+            })
+            .catch((err) => {
+                console.error(`Ошибка ${err}`);
+            });
+    });
+};
+
 const generateCartPage = () => {
     const cartList = document.querySelector('.cart-list');
     const cartTotalPrice = document.querySelector('.cart-total-price');
@@ -93,6 +139,7 @@ const generateCartPage = () => {
         });
     }
 
+    sendCart();
 };
 
 export default generateCartPage;
